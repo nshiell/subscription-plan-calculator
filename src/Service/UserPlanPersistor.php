@@ -10,6 +10,8 @@ class UserPlanPersistor
     public function saveFromRequest(User $user, Request $request)
     {
         $data = json_decode($request->getContent(), true);
-        throw new \InvalidArgumentException;
+        if (!is_array($data)) {
+            throw new \InvalidArgumentException;
+        }
     }
 }

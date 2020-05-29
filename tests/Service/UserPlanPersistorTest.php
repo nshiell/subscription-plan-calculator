@@ -10,7 +10,7 @@ use App\Entity\User;
 
 class UserPlanPersistorTest extends TestCase
 {
-    public function testAdd()
+    public function testSaveFromRequestNotArray()
     {
         $requestMock = $this->createMock(Request::class);
 
@@ -21,5 +21,18 @@ class UserPlanPersistorTest extends TestCase
         $persistor = new UserPlanPersistor();
         $this->expectException(\InvalidArgumentException::class);
         $persistor->saveFromRequest($user, $requestMock);
+    }
+
+    public function testSaveFromRequestEmpty()
+    {
+        $requestMock = $this->createMock(Request::class);
+
+        $requestMock->method('getContent')
+             ->willReturn('[]');
+
+        $user = new User;
+        $persistor = new UserPlanPersistor();
+        $persistor->saveFromRequest($user, $requestMock);
+        $this->assertTrue(true);
     }
 }

@@ -23,6 +23,11 @@ class UserPlanPersistor
             if (!isset ($userPlanRequest['code'])) {
                 return false;
             }
+
+            if (!isset ($userPlanRequest['isYearCost'])) {
+                return false;
+            }
+
             $codes[] = $userPlanRequest['code'];
         }
 

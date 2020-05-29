@@ -59,4 +59,22 @@ class UserPlanPersistorTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         $persistor->saveFromRequest($user, $requestMock);
     }
+
+    public function testSaveFromRequestNotIsYearCostProvided()
+    {
+        $requestMock = $this->createMock(Request::class);
+
+        $planRepositoryMock = $this->getMockBuilder(PlanRepository::class)
+            ->setMethods(['findByCode'])
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $requestMock->method('getContent')
+             ->willReturn('[{"code": "gb"}]');
+
+        $user = new User;
+        $persistor = new UserPlanPersistor($planRepositoryMock);
+        $this->expectException(\InvalidArgumentException::class);
+        $persistor->saveFromRequest($user, $requestMock);
+    }
 }

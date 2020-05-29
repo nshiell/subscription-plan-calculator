@@ -78,7 +78,6 @@ class UserPlanPersistorTest extends TestCase
         $persistor->saveFromRequest($user, $requestMock);
     }
 
-
     public function testSaveFromRequestNotIsYearCostBool()
     {
         $requestMock = $this->createMock(Request::class);
@@ -94,6 +93,26 @@ class UserPlanPersistorTest extends TestCase
         $user = new User;
         $persistor = new UserPlanPersistor($planRepositoryMock);
         $this->expectException(\InvalidArgumentException::class);
+        $persistor->saveFromRequest($user, $requestMock);
+    }
+
+    public function testSaveFromRequestSave()
+    {
+        $requestMock = $this->createMock(Request::class);
+
+        $planRepositoryMock = $this->getMockBuilder(PlanRepository::class)
+            ->setMethods(['findByCode'])
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $requestMock->method('getContent')
+             ->willReturn('[
+                {"code": "gb", "isYearCost": false},
+                {"code": "us", "isYearCost": true}
+            ]');
+
+        $user = new User;
+        $persistor = new UserPlanPersistor($planRepositoryMock);
         $persistor->saveFromRequest($user, $requestMock);
     }
 }

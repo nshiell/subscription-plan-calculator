@@ -2,12 +2,8 @@
 
 namespace App\Service;
 
-use Symfony\Component\HttpFoundation\Request;
-use App\Repository\PlanRepository;
-use App\Entity\User;
-use App\Entity\Plan;
-use App\Entity\UserPlan;
 use Doctrine\ORM\EntityManagerInterface;
+use App\Entity\User;
 
 class UserPlansUpdater
 {

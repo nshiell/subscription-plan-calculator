@@ -28,6 +28,10 @@ class UserPlanPersistor
                 return false;
             }
 
+            if (!is_bool($userPlanRequest['isYearCost'])) {
+                return false;
+            }
+
             $codes[] = $userPlanRequest['code'];
         }
 

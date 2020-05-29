@@ -25,7 +25,7 @@ class User
     private $username;
 
     /**
-     * @ORM\OneToMany(targetEntity=UserPlan::class, mappedBy="user", orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity=UserPlan::class, mappedBy="user", orphanRemoval=true, cascade={"persist"})
      */
     private $userPlans;
 

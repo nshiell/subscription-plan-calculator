@@ -3,13 +3,14 @@
 namespace App\Tests\Service;
 
 use PHPUnit\Framework\TestCase;
-use App\Service\UserPlanPersistor;
+use App\Service\UserPlansFromRequestCreator;
 use Symfony\Component\HttpFoundation\Request;
 use App\Repository\PlanRepository;
-use App\Entity\User;
+use App\Entity\Plan;
+use App\Entity\UserPlan;
 
 
-class UserPlanPersistorTest extends TestCase
+class UserPlansFromRequestCreatorTest extends TestCase
 {
     public function testSaveFromRequestNotArray()
     {
@@ -19,10 +20,9 @@ class UserPlanPersistorTest extends TestCase
         $requestMock->method('getContent')
              ->willReturn('BAD DATA');
 
-        $user = new User;
-        $persistor = new UserPlanPersistor($planRepositoryMock);
+        $creator = new UserPlansFromRequestCreator($planRepositoryMock);
         $this->expectException(\InvalidArgumentException::class);
-        $persistor->saveFromRequest($user, $requestMock);
+        $creator->createArrayFromRequest($requestMock);
     }
 
     public function testSaveFromRequestNotPresentCode()
@@ -33,10 +33,9 @@ class UserPlanPersistorTest extends TestCase
         $requestMock->method('getContent')
              ->willReturn('[{"codeZ": "gb", "isYearCost": false}]');
 
-        $user = new User;
-        $persistor = new UserPlanPersistor($planRepositoryMock);
+        $creator = new UserPlansFromRequestCreator($planRepositoryMock);
         $this->expectException(\InvalidArgumentException::class);
-        $persistor->saveFromRequest($user, $requestMock);
+        $creator->createArrayFromRequest($requestMock);
     }
 
     public function testSaveFromRequestNotValidCode()
@@ -54,10 +53,9 @@ class UserPlanPersistorTest extends TestCase
         $requestMock->method('getContent')
              ->willReturn('[{"code": "ZZ", "isYearCost": false}]');
 
-        $user = new User;
-        $persistor = new UserPlanPersistor($planRepositoryMock);
+        $creator = new UserPlansFromRequestCreator($planRepositoryMock);
         $this->expectException(\InvalidArgumentException::class);
-        $persistor->saveFromRequest($user, $requestMock);
+        $creator->createArrayFromRequest($requestMock);
     }
 
     public function testSaveFromRequestNotIsYearCostProvided()
@@ -72,10 +70,9 @@ class UserPlanPersistorTest extends TestCase
         $requestMock->method('getContent')
              ->willReturn('[{"code": "gb"}]');
 
-        $user = new User;
-        $persistor = new UserPlanPersistor($planRepositoryMock);
+        $creator = new UserPlansFromRequestCreator($planRepositoryMock);
         $this->expectException(\InvalidArgumentException::class);
-        $persistor->saveFromRequest($user, $requestMock);
+        $creator->createArrayFromRequest($requestMock);
     }
 
     public function testSaveFromRequestNotIsYearCostBool()
@@ -90,10 +87,9 @@ class UserPlanPersistorTest extends TestCase
         $requestMock->method('getContent')
              ->willReturn('[{"code": "gb", "isYearCost": "false"}]');
 
-        $user = new User;
-        $persistor = new UserPlanPersistor($planRepositoryMock);
+        $creator = new UserPlansFromRequestCreator($planRepositoryMock);
         $this->expectException(\InvalidArgumentException::class);
-        $persistor->saveFromRequest($user, $requestMock);
+        $creator->createArrayFromRequest($requestMock);
     }
 
     public function testSaveFromRequestSave()
@@ -101,9 +97,21 @@ class UserPlanPersistorTest extends TestCase
         $requestMock = $this->createMock(Request::class);
 
         $planRepositoryMock = $this->getMockBuilder(PlanRepository::class)
-            ->setMethods(['findByCode'])
+            ->setMethods(['findByCode', 'findAll'])
             ->disableOriginalConstructor()
             ->getMock();
+
+            $planRepositoryMock->method('findByCode')
+            ->with($this->equalTo(['gb', 'us']))
+            ->willReturn([1, 2]);
+
+        $allPlans = [
+            (new Plan)->setCode('gb'),
+            (new Plan)->setCode('us')
+        ];
+
+        $planRepositoryMock->method('findAll')
+            ->willReturn($allPlans);
 
         $requestMock->method('getContent')
              ->willReturn('[
@@ -111,8 +119,16 @@ class UserPlanPersistorTest extends TestCase
                 {"code": "us", "isYearCost": true}
             ]');
 
-        $user = new User;
-        $persistor = new UserPlanPersistor($planRepositoryMock);
-        $persistor->saveFromRequest($user, $requestMock);
+        $creator = new UserPlansFromRequestCreator($planRepositoryMock);
+        $userPlans = $creator->createArrayFromRequest($requestMock);
+        $this->assertCount(2, $userPlans);
+
+        $this->assertInstanceOf(UserPlan::class, $userPlans[0]);
+        $this->assertFalse($userPlans[0]->getIsYearCost());
+        $this->assertSame($allPlans[0], $userPlans[0]->getPlan());
+
+        $this->assertInstanceOf(UserPlan::class, $userPlans[1]);
+        $this->asserttrue($userPlans[1]->getIsYearCost());
+        $this->assertSame($allPlans[1], $userPlans[1]->getPlan());
     }
 }

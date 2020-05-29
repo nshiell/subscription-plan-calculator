@@ -9,6 +9,9 @@ use App\Entity\UserPlan;
 
 class UserPlansFromRequestCreator
 {
+    const KEY_CODE    = 'code';
+    const KEY_IS_YEAR = 'isYearCost';
+
     /** @var PlanRepository */
     private $planRepository;
 
@@ -59,12 +62,12 @@ class UserPlansFromRequestCreator
             foreach ($userPlanRequestList as $userPlanRequest) {
 
                 // this is the code the user wants to add
-                $newCode = $userPlanRequest['code'];
+                $newCode = $userPlanRequest[self::KEY_CODE];
 
                 if ($newCode == $planCode) {
                     $userPlans[] = (new UserPlan)
                         ->setPlan($plan)
-                        ->setIsYearCost($userPlanRequest['isYearCost']);
+                        ->setIsYearCost($userPlanRequest[self::KEY_IS_YEAR]);
 
                     // added a code for this plan, no nee to continue going
                     // through the request anymore
